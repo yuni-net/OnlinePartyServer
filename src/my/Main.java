@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * 
  * @author yuni
  *
- * @see in this version, I will die when ID_count exceed the limit.
  */
 public class Main {
 	
@@ -67,7 +66,10 @@ public class Main {
 			process_request(request, packet);
 	}
 
-
+	/**
+	 * @brief I will show you the infomation about the message you got.
+	 * @param packet: Set the packet you got.
+	 */
 	private void show_info_got_message(DatagramPacket packet){
 		InetSocketAddress sockaddr = (InetSocketAddress)packet.getSocketAddress();
 		InetAddress ip = sockaddr.getAddress();
@@ -93,15 +95,56 @@ public class Main {
 	
 	private void join(Request request, DatagramPacket packet)throws Exception{
 		Surfer requester = get_requester(request, packet);
-		int index = find_empty_seet();
-		if(index == -1) {
-			// then there're no vacant table.
+		int ID = add_member_ifneed(requester);
+		if(ID == -1) {
+			// Then there are no vacant table.
 			tell_fully_occupied(requester);
 			return;
 		}
 		
+		tell_requester_others(requester, ID);
+	}
+	
+	/**
+	 * @brief I add the new member if the member has NOT registered yet.
+	 * @param requester
+	 * @return The member's ID is returned.
+	 */
+	private int add_member_ifneed(Surfer requester)throws Exception {
+		int exist_index = find_member(requester);
+		if(exist_index != -1) {
+			// Then he has already registered.
+			return exist_index;
+		}
+		
+		int index = find_empty_seet();
+		if(index == -1) {
+			// Then there're no vacant table.
+			return -1;
+		}
+		
 		members[index] = make_member(requester, index);
-		tell_requester_others(requester, members[index].ID);
+		tell_requester_others(requester, index);
+		return index;
+	}
+	
+	/**
+	 * @brief I find the user who is registered on the members.
+	 * @param requester
+	 * @return I return the ID of the member.
+	 */
+	private int find_member(Surfer requester) {
+		for(int index=0; index < max_member; ++index) {
+			Member member = members[index];
+			if(member == null) {
+				continue;
+			}
+			
+			if(member.surfer.equals(requester)==true) {
+				return index;
+			}
+		}
+		return -1;
 	}
 	
 	/**
@@ -122,6 +165,11 @@ public class Main {
 		return -1;
 	}
 	
+	/**
+	 * @brief I tell the user that there are no vacant table.
+	 * @param requester: Set the user who did request to join.
+	 * @throws Exception
+	 */
 	private void tell_fully_occupied(Surfer requester)throws Exception
 	{
 		String reply = "{\"signature\": \"OnlineParty\", \"version\": 0, \"reply\": \"fully occupied\"}";
@@ -137,6 +185,13 @@ public class Main {
 		return member;
 	}
 	
+	/**
+	 * @brief I tell the user the IP addresses and the ports of the others
+	 *        who have already joined us.
+	 * @param requester: Set the user who did request to join.
+	 * @param ter_ID: Set the ID of the requester.
+	 * @throws Exception
+	 */
 	private void tell_requester_others(Surfer requester, int ter_ID)throws Exception{
 		StringBuilder builder = new StringBuilder();
 		builder.append("{\"signature\": \"OnlineParty\",\"version\": 0,\"reply\": \"join\",\"your ID\": ");
