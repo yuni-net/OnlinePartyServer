@@ -197,9 +197,15 @@ public class Main {
 		builder.append("{\"signature\": \"OnlineParty\",\"version\": 0,\"reply\": \"join\",\"your ID\": ");
 		builder.append(Integer.toString(ter_ID));
 		builder.append(",\"the others\": [");
-		builder.append(members[0].toJsonString());
-		for(int i = 1; i< max_member; ++i){
-			builder.append(",");
+		
+		boolean is_first = true;
+		for(int i = 0; i < max_member; ++i) {
+			if(i == ter_ID){continue;}
+			if(members[i] == null){continue;}
+			if(is_first) {
+				builder.append(",");
+				is_first = false;
+			}
 			builder.append(members[i].toJsonString());
 		}
 		builder.append("]}");
