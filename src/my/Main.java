@@ -61,6 +61,7 @@ public class Main {
 				request = mapper.readValue(request_str, Request.class);
 			}
 			catch(Exception e){
+				System.out.println("the data was NOT json data.");
 				return;
 			}
 			process_request(request, packet);
@@ -81,15 +82,20 @@ public class Main {
 	
 	private void process_request(Request request, DatagramPacket packet) throws Exception {
 		if(request.signature.equals("OnlineParty")==false){
+			System.out.println("the signature was invalid.");
 			return;
 		}
 		
 		if(request.version != 0){
+			System.out.println("the version is not supported.");
 			return;
 		}
 		
 		if(request.request.equals("join")){
 			join(request, packet);
+		}
+		else {
+			System.out.println("that's an unknown request.");
 		}
 	}
 	
@@ -98,6 +104,7 @@ public class Main {
 		int ID = add_member_ifneed(requester);
 		if(ID == -1) {
 			// Then there are no vacant table.
+			System.out.println("Oops! Unfortunately, there are no vacant table.");
 			tell_fully_occupied(requester);
 			return;
 		}
@@ -114,6 +121,7 @@ public class Main {
 		int exist_index = find_member(requester);
 		if(exist_index != -1) {
 			// Then he has already registered.
+			System.out.println("He has already registered.");
 			return exist_index;
 		}
 		
@@ -124,6 +132,7 @@ public class Main {
 		}
 		
 		members[index] = make_member(requester, index);
+		System.out.println("The new user was registered");
 		tell_requester_others(requester, index);
 		return index;
 	}
