@@ -133,7 +133,6 @@ public class Main {
 		
 		members[index] = make_member(requester, index);
 		System.out.println("The new user was registered");
-		tell_requester_others(requester, index);
 		return index;
 	}
 	
@@ -203,22 +202,26 @@ public class Main {
 	 */
 	private void tell_requester_others(Surfer requester, int ter_ID)throws Exception{
 		StringBuilder builder = new StringBuilder();
-		builder.append("{\"signature\": \"OnlineParty\",\"version\": 0,\"reply\": \"join\",\"your ID\": ");
+		builder.append("{\"signature\": \"OnlineParty\", \"version\": 0, \"reply\": \"join\", \"your ID\": ");
 		builder.append(Integer.toString(ter_ID));
-		builder.append(",\"the others\": [");
+		builder.append(", \"the others\": [");
 		
 		boolean is_first = true;
 		for(int i = 0; i < max_member; ++i) {
 			if(i == ter_ID){continue;}
 			if(members[i] == null){continue;}
 			if(is_first) {
-				builder.append(",");
 				is_first = false;
+			}
+			else {
+				builder.append(", ");
 			}
 			builder.append(members[i].toJsonString());
 		}
 		builder.append("]}");
 		String reply = new String(builder);
+		System.out.println("I did reply:");
+		System.out.println(reply);
 		byte reply_data[] = reply.getBytes();
         DatagramPacket dp = new DatagramPacket(reply_data, reply_data.length, InetAddress.getByName(requester.get_global().ip), requester.get_global().port);
         socket.send(dp);
