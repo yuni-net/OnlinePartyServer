@@ -61,6 +61,7 @@ public class Main {
 				request = mapper.readValue(request_str, Request.class);
 			}
 			catch(Exception e){
+				System.out.println("the data was NOT json data.");
 				return;
 			}
 			process_request(request, packet);
@@ -81,15 +82,20 @@ public class Main {
 	
 	private void process_request(Request request, DatagramPacket packet) throws Exception {
 		if(request.signature.equals("OnlineParty")==false){
+			System.out.println("the signature was invalid.");
 			return;
 		}
 		
 		if(request.version != 0){
+			System.out.println("the version is not supported.");
 			return;
 		}
 		
 		if(request.request.equals("join")){
 			join(request, packet);
+		}
+		else {
+			System.out.println("that's an unknown request.");
 		}
 	}
 	
@@ -98,6 +104,7 @@ public class Main {
 		int ID = add_member_ifneed(requester);
 		if(ID == -1) {
 			// Then there are no vacant table.
+			System.out.println("Oops! Unfortunately, there are no vacant table.");
 			tell_fully_occupied(requester);
 			return;
 		}
@@ -114,6 +121,7 @@ public class Main {
 		int exist_index = find_member(requester);
 		if(exist_index != -1) {
 			// Then he has already registered.
+			System.out.println("He has already registered.");
 			return exist_index;
 		}
 		
@@ -124,7 +132,7 @@ public class Main {
 		}
 		
 		members[index] = make_member(requester, index);
-		tell_requester_others(requester, index);
+		System.out.println("The new user was registered");
 		return index;
 	}
 	
@@ -194,22 +202,26 @@ public class Main {
 	 */
 	private void tell_requester_others(Surfer requester, int ter_ID)throws Exception{
 		StringBuilder builder = new StringBuilder();
-		builder.append("{\"signature\": \"OnlineParty\",\"version\": 0,\"reply\": \"join\",\"your ID\": ");
+		builder.append("{\"signature\": \"OnlineParty\", \"version\": 0, \"reply\": \"join\", \"your ID\": ");
 		builder.append(Integer.toString(ter_ID));
-		builder.append(",\"the others\": [");
+		builder.append(", \"the others\": [");
 		
 		boolean is_first = true;
 		for(int i = 0; i < max_member; ++i) {
 			if(i == ter_ID){continue;}
 			if(members[i] == null){continue;}
 			if(is_first) {
-				builder.append(",");
 				is_first = false;
+			}
+			else {
+				builder.append(", ");
 			}
 			builder.append(members[i].toJsonString());
 		}
 		builder.append("]}");
 		String reply = new String(builder);
+		System.out.println("I did reply:");
+		System.out.println(reply);
 		byte reply_data[] = reply.getBytes();
         DatagramPacket dp = new DatagramPacket(reply_data, reply_data.length, InetAddress.getByName(requester.get_global().ip), requester.get_global().port);
         socket.send(dp);

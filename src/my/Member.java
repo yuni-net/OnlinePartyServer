@@ -13,9 +13,9 @@ public class Member {
 		StringBuilder builder = new StringBuilder();
 		builder.append("{\"ID\": ");
 		builder.append(Integer.toString(ID));
-		builder.append(", \"IP\": ");
+		builder.append(", \"IP\": \"");
 		builder.append(surfer.get_global().ip);
-		builder.append(", \"port\": ");
+		builder.append("\", \"port\": ");
 		builder.append(surfer.get_global().port);
 		builder.append("}");
 		return new String(builder);
