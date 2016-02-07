@@ -4,7 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
+import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -42,6 +42,15 @@ public class Main {
 		mapper.enable(SerializationFeature.INDENT_OUTPUT);
 		socket = new DatagramSocket(port);
 		members = new Member[max_member];
+		
+		schedules = new MsRadian[2];
+		Random rand = new Random();
+		schedules[0] = new MsRadian();
+		schedules[0].ms = System.currentTimeMillis() + 10 + rand.nextInt(10);
+		schedules[0].radian = (float)Math.random()*2*3.14159265f;
+		schedules[1] = new MsRadian();
+		schedules[1].ms = schedules[0].ms + 10 + rand.nextInt(10);
+		schedules[1].radian = (float)Math.random()*2*3.14159265f;
 	}
 
 
@@ -70,6 +79,23 @@ public class Main {
 			}
 			process_request(request, requester);
 	}
+
+
+	
+	
+	
+	
+	
+	
+	
+	static final int port = 9696;
+	static final int max_member = 20;
+
+	private ObjectMapper mapper;
+	private DatagramSocket socket;
+	private Member[] members;
+	private MsRadian[] schedules;
+
 
 	/**
 	 * @brief I remove the afk user from members.
@@ -155,6 +181,9 @@ public class Main {
 		if(request.request.equals("join")){
 			join(requester);
 		}
+		else if(request.request.equals("sync_enemy_attack")) {
+			sync_enemy_attack(requester);
+		}
 		else {
 			System.out.println("that's an unknown request.");
 		}
@@ -175,6 +204,53 @@ public class Main {
 		}
 
 		tell_requester_others(requester, ID);
+	}
+
+	/**
+	 * @brief I attempt to register the user to the member.
+	 * @param requester: Set the Surfer object of the user.
+	 * @throws Exception
+	 */
+	private void sync_enemy_attack(Surfer requester)throws Exception{
+		update_enemy_attack_asneeded();
+		String reply = "{" +
+			"\"signature\": \"OnlineParty\", " +
+			"\"version\": 0, " +
+			"\"reply\": \"sync_enemy_attack\", " +
+			"\"schedules_enemy_attack\": [" +
+				"{\"ms\": " + schedules[0].ms + ", \"radian\": " + schedules[0].radian + "}," +
+				"{\"ms\": " + schedules[1].ms + ", \"radian\": " + schedules[1].radian + "}" +
+			"]" +
+		"}";
+		byte reply_data[] = reply.getBytes();
+        DatagramPacket dp = new DatagramPacket(reply_data, reply_data.length, InetAddress.getByName(requester.get_global().ip), requester.get_global().port);
+        socket.send(dp);
+	}
+
+	/**
+	 * @brief I attempt to register the user to the member.
+	 * @param requester: Set the Surfer object of the user.
+	 * @throws Exception
+	 */
+	private void update_enemy_attack_asneeded(){
+		final long now = System.currentTimeMillis();
+		Random rand = new Random();
+		
+		if(now >= schedules[1].ms+5) {
+			schedules[0].ms = now + 10 + rand.nextInt(10);
+			schedules[0].radian = (float)Math.random()*2*3.14159265f;
+			schedules[1].ms = schedules[0].ms + 10 + rand.nextInt(10);
+			schedules[1].radian = (float)Math.random()*2*3.14159265f;
+			return;
+		}
+		
+		if(now >= schedules[0].ms+5)
+		{
+			schedules[0] = schedules[1];
+			schedules[1].ms = schedules[0].ms + 10 + rand.nextInt(10);
+			schedules[1].radian = (float)Math.random()*2*3.14159265f;
+			return;
+		}
 	}
 
 	/**
@@ -319,15 +395,6 @@ public class Main {
 		requester.set(local, global);
 		return requester;
 	}
-
-	static final int port = 9696;
-	static final int max_member = 20;
-
-	private ObjectMapper mapper;
-	private DatagramSocket socket;
-	private Member[] members;
-
-
 
 
 }
