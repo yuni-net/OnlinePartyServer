@@ -184,7 +184,7 @@ public class Main {
 	 * @throws Exception
 	 */
 	private void tell_others_rookie(Surfer requester, final int ID) throws Exception{
-		String reply = "{\"signature\": \"OnlineParty\", \"version\": 0, \"reply\": \"rookie joined\", \"rookie_ID\": "+ID+", \"rookie_IP\": \""+requester.get_global().ip+"\", \"rookie_port\": "+requester.get_global().port+"}";
+		String reply = "{\"signature\": \"OnlineParty\", \"version\": 0, \"reply\": \"rookie_joined\", \"rookie_ID\": "+ID+", \"rookie_IP\": \""+requester.get_global().ip+"\", \"rookie_port\": "+requester.get_global().port+"}";
 		byte reply_data[] = reply.getBytes();
 		for(int index=0; index < max_member; ++index) {
 			if(index==ID){continue;}
