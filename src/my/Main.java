@@ -177,8 +177,14 @@ public class Main {
 		tell_others_rookie(requester, ID);
 	}
 	
+	/**
+	 * @brief I tell others that a rookie joined.
+	 * @param requester
+	 * @param ID
+	 * @throws Exception
+	 */
 	private void tell_others_rookie(Surfer requester, final int ID) throws Exception{
-		String reply = "{\"signature\": \"OnlineParty\", \"version\": 0, \"reply\": \"lookie joined\", \"lookie_ID\": "+ID+", \"lookie_IP\": \""+requester.get_global().ip+"\", \"lookie_port\": "+requester.get_global().port+"}";
+		String reply = "{\"signature\": \"OnlineParty\", \"version\": 0, \"reply\": \"rookie joined\", \"rookie_ID\": "+ID+", \"rookie_IP\": \""+requester.get_global().ip+"\", \"rookie_port\": "+requester.get_global().port+"}";
 		byte reply_data[] = reply.getBytes();
 		for(int index=0; index < max_member; ++index) {
 			if(index==ID){continue;}
