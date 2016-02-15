@@ -174,20 +174,6 @@ public class Main {
 		}
 
 		tell_requester_others(requester, ID);
-		tell_others_rookie(requester, ID);
-	}
-	
-	private void tell_others_rookie(Surfer requester, final int ID) throws Exception{
-		String reply = "{\"signature\": \"OnlineParty\", \"version\": 0, \"reply\": \"lookie joined\", \"lookie_ID\": "+ID+", \"lookie_IP\": \""+requester.get_global().ip+"\", \"lookie_port\": "+requester.get_global().port+"}";
-		byte reply_data[] = reply.getBytes();
-		for(int index=0; index < max_member; ++index) {
-			if(index==ID){continue;}
-			Member member = members[index];
-			if(member==null){continue;}
-			Surfer target = member.surfer;
-	        DatagramPacket dp = new DatagramPacket(reply_data, reply_data.length, InetAddress.getByName(target.get_global().ip), target.get_global().port);
-	        socket.send(dp);
-		}
 	}
 
 	/**
