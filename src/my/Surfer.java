@@ -1,36 +1,46 @@
 package my;
 
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 public class Surfer{
-	public boolean is_available(){
-		if(local == null){ return false; }
-		if(global == null){ return false; }
-		return true;
+	public Surfer(String ip, int port){
+		this.ip = ip;
+		this.port = port;
+	}
+	
+	public Surfer(DatagramPacket packet) {
+		InetSocketAddress sockaddr = (InetSocketAddress)packet.getSocketAddress();
+		InetAddress address = sockaddr.getAddress();
+		
+		ip = address.getHostAddress();
+		port = sockaddr.getPort();
 	}
 	
 	public boolean equals(Surfer another){
-		return global.equals(another.get_global());
+		if(ip.equals(another.ip) == false){
+			System.out.println("different IP.");
+			return false;
+		}
+		if(port != another.port){
+			System.out.println("different port");
+			return false;
+		}
+		return true;
+	}
+	
+	public String get_ip() {
+		return ip;
+	}
+	
+	public int get_port() {
+		return port;
 	}
 	
 	
-	public void set(IpPort local, IpPort global){
-		this.local = local;
-		this.global = global;
-	}
-	
-	public IpPort get_local(){
-		return local;
-	}
-	public IpPort get_global(){
-		return global;
-	}
 	
 	
-	
-	public Surfer(){
-		local = null;
-		global = null;
-	}
-	
-	private IpPort local;
-	private IpPort global;
+	private String ip;
+	private int port;
 }

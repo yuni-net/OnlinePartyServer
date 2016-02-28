@@ -19,7 +19,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		try{
-			Main me = new Main();
+			OnlinePartyServer server = new OnlinePartyServer();
 
 			System.out.println("server started");
 
@@ -27,14 +27,12 @@ public class Main {
 				System.out.println("server's IP: " + InetAddress.getLocalHost().getHostAddress());
 				System.out.println("server's port: " + port);
 				System.out.println("waiting any requests...");
-				me.process();
+				server.process();
 			}
-
 		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
-
 	}
 
 	public Main() throws Exception{
