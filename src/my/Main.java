@@ -1,6 +1,7 @@
 package my;
 
 import java.net.DatagramPacket;
+import java.nio.ByteBuffer;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -50,12 +51,18 @@ public class Main {
 			socket.receive(packet);
 
 			show_info_got_message(packet);
+			byte[] data = packet.getData();
+			Surfer requester = get_requester(packet);
 
-			String request_str = new String(packet.getData());
+			if(is_it_binary_data(data)) {
+				System.out.println("It's the binary data.");
+				process_binary_data(data, requester);
+			}
+
+			String request_str = new String(data);
 			System.out.println("    the message:");
 			System.out.println(request_str);
 
-			Surfer requester = get_requester(packet);
 			update_last_sync_ms(requester);
 			remove_afk(requester);
 
@@ -68,6 +75,57 @@ public class Main {
 				return;
 			}
 			process_request(request, requester);
+	}
+
+	private void sync_time(Surfer requester) {
+		final String signature = new String("OnlineParty\0");
+		final int length_version = 1;
+		final int length_reply = 1;
+		final int length_content = 8;
+		final int capacity = signature.length()+length_version+length_reply+length_content;
+		ByteBuffer buffer = ByteBuffer.allocate(capacity);
+
+		final byte version = 0;
+		buffer.put(signature.getBytes(), 0, signature.length());
+		buffer.put(version);
+		buffer.put(request_sync_time);
+		buffer.putLong(System.currentTimeMillis());
+
+
+		byte reply_data[] = reply.getBytes();
+        DatagramPacket dp = new DatagramPacket(reply_data, reply_data.length, InetAddress.getByName(requester.get_global().ip), requester.get_global().port);
+        socket.send(dp);
+	}
+
+	/**
+	 * @brief I process the binary data for 'OnlineParty.'
+	 * @param data: Set the data you received.
+	 * @param requester: Set the object of Surfer which send the request.
+	 */
+	private void process_binary_data(byte[] data, Surfer requester) {
+		byte version = data[12];
+		if(version==0) {
+			byte request = data[13];
+			if(request==request_sync_time) {
+				sync_time(requester);
+			}
+		}
+		else
+		{
+			System.out.println("The version of the data is unsupported. The version: " + version);
+		}
+	}
+
+	/**
+	 * @brief I identify whether it is a binary data for 'OnlineParty.'
+	 * @param data
+	 * @return
+	 * 		true: It is the data for 'OnlineParty.'
+	 * 		false: It is NOT the data for 'OnlineParty.'
+	 */
+	private boolean is_it_binary_data(byte[] data) {
+		String signature = new String(data, 0, 11);
+		return signature.equals("OnlineParty");
 	}
 
 	/**
@@ -153,6 +211,10 @@ public class Main {
 
 		if(request.request.equals("join")){
 			join(requester);
+		}
+		else if(request.request.equals("sync_time"))
+		{
+			// todo
 		}
 		else {
 			System.out.println("that's an unknown request.");
@@ -321,6 +383,7 @@ public class Main {
 
 	static final int port = 9696;
 	static final int max_member = 20;
+	static final byte request_sync_time = 0;
 
 	private ObjectMapper mapper;
 	private DatagramSocket socket;
