@@ -1,10 +1,10 @@
 package my;
 
 import java.net.DatagramPacket;
-import java.nio.ByteBuffer;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -54,17 +54,18 @@ public class Main {
 			byte[] data = packet.getData();
 			Surfer requester = get_requester(packet);
 
+			update_last_sync_ms(requester);
+			remove_afk(requester);
+
 			if(is_it_binary_data(data)) {
 				System.out.println("It's the binary data.");
 				process_binary_data(data, requester);
+				return;
 			}
 
 			String request_str = new String(data);
 			System.out.println("    the message:");
 			System.out.println(request_str);
-
-			update_last_sync_ms(requester);
-			remove_afk(requester);
 
 			Request request;
 			try{
@@ -77,22 +78,31 @@ public class Main {
 			process_request(request, requester);
 	}
 
-	private void sync_time(Surfer requester) {
+	/**
+	 * @brief I return requester current time millis.
+	 * @param requester
+	 * @throws Exception
+	 */
+	private void return_time(Surfer requester) throws Exception {
 		final String signature = new String("OnlineParty\0");
+		final byte version = 0;
 		final int length_version = 1;
 		final int length_reply = 1;
 		final int length_content = 8;
 		final int capacity = signature.length()+length_version+length_reply+length_content;
-		ByteBuffer buffer = ByteBuffer.allocate(capacity);
 
-		final byte version = 0;
+		ByteBuffer buffer = ByteBuffer.allocate(capacity);
 		buffer.put(signature.getBytes(), 0, signature.length());
 		buffer.put(version);
 		buffer.put(request_sync_time);
 		buffer.putLong(System.currentTimeMillis());
-
-
-		byte reply_data[] = reply.getBytes();
+		
+		if(buffer.hasArray()==false) {
+			System.out.println("failed to reply for syncing time millis");
+			return;
+		}
+		
+		byte[] reply_data = buffer.array();
         DatagramPacket dp = new DatagramPacket(reply_data, reply_data.length, InetAddress.getByName(requester.get_global().ip), requester.get_global().port);
         socket.send(dp);
 	}
@@ -102,12 +112,12 @@ public class Main {
 	 * @param data: Set the data you received.
 	 * @param requester: Set the object of Surfer which send the request.
 	 */
-	private void process_binary_data(byte[] data, Surfer requester) {
+	private void process_binary_data(byte[] data, Surfer requester) throws Exception {
 		byte version = data[12];
 		if(version==0) {
 			byte request = data[13];
 			if(request==request_sync_time) {
-				sync_time(requester);
+				return_time(requester);
 			}
 		}
 		else
