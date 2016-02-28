@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 public class OnlinePartyServer {
 	public OnlinePartyServer() throws Exception {
 		socket = new DatagramSocket(port);
+		member_manager = new MemberManager();
 	}
 	
 	public void process() {
@@ -18,6 +19,8 @@ public class OnlinePartyServer {
 		show_info_got_message(packet);
 		byte[] data = packet.getData();
 		Surfer requester = new Surfer(packet);
+		
+		member_manager.update(requester);
 
 		update_last_sync_ms(requester);
 		remove_afk(requester);
@@ -55,18 +58,10 @@ public class OnlinePartyServer {
 	
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	static final int port = 9696;
+	private static final int port = 9696;
 
 	private DatagramSocket socket;
+	private MemberManager member_manager;
 
 	/**
 	 * @brief I will show you the infomation about the message you got.
