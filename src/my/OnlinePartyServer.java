@@ -9,8 +9,10 @@ public class OnlinePartyServer {
 	public OnlinePartyServer() throws Exception {
 		socket = new DatagramSocket(port);
 		member_manager = new MemberManager();
+		binary_processor = new BinaryProcessor();
+		json_processor = new JsonProcessor();
 	}
-	
+
 	public void process() {
 		byte buffer[] = new byte[65536];
 		DatagramPacket packet = new DatagramPacket(buffer,  buffer.length);
@@ -19,15 +21,12 @@ public class OnlinePartyServer {
 		show_info_got_message(packet);
 		byte[] data = packet.getData();
 		Surfer requester = new Surfer(packet);
-		
+
 		member_manager.update(requester);
 
-		update_last_sync_ms(requester);
-		remove_afk(requester);
-
-		if(is_it_binary_data(data)) {
+		if(binary_processor.is_binary_data(data)) {
 			System.out.println("It's the binary data.");
-			process_binary_data(data, requester);
+			binary_processor.process(socket, data, requester);
 			return;
 		}
 
@@ -35,33 +34,27 @@ public class OnlinePartyServer {
 		System.out.println("    the message:");
 		System.out.println(request_str);
 
-		Request request;
-		try{
-			request = mapper.readValue(request_str, Request.class);
-		}
-		catch(Exception e){
-			System.out.println("the data was NOT json data.");
-			return;
-		}
-		process_request(request, requester);
+		json_processor.process_as_needed(socket, request_str, requester);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
+
+
+
+
+
 	private static final int port = 9696;
 
 	private DatagramSocket socket;
 	private MemberManager member_manager;
+	private BinaryProcessor binary_processor;
+	private JsonProcessor json_processor;
 
 	/**
 	 * @brief I will show you the infomation about the message you got.

@@ -1,18 +1,24 @@
 package my;
 
 public class MemberManager {
+	public MemberManager() {
+		members = new Member[max_member];
+	}
+
 	public void update(Surfer requester) {
 		update_last_sync_ms(requester);
 		remove_afk(requester);
 	}
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+	private static final int max_member = 20;
+
+	private Member[] members;
+
 	/**
 	 * @brief I find the member which matches the 'requester.'
 	 * @param requester: Set the Surfer object of who sent the request.
@@ -32,7 +38,7 @@ public class MemberManager {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * @brief I update 'last_sync_ms' of each member.
 	 * @param requester: Set the Surfer object of who sent the request.
