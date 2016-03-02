@@ -26,6 +26,15 @@ public class Main {
 			while(true){
 				System.out.println("server's IP: " + InetAddress.getLocalHost().getHostAddress());
 				System.out.println("server's port: " + port);
+				System.out.println("current time millis: " + System.currentTimeMillis());
+				ByteBuffer buffer = ByteBuffer.allocate(8);
+				buffer.putLong(System.currentTimeMillis());
+				System.out.print("byte buffer current millis:");
+				for(int i=0; i < 8; ++i) {
+					System.out.print(" " + (buffer.get(i)&0xff));
+				}
+				System.out.println("");
+				buffer = null;
 				System.out.println("waiting any requests...");
 				me.process();
 			}
