@@ -1,9 +1,11 @@
 package my;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -231,13 +233,22 @@ public class Main {
 		if(request.request.equals("join")){
 			join(requester);
 		}
-		else if(request.request.equals("sync_time"))
-		{
+		else if(request.request.equals("sync_time")) {
 			// todo
+		}
+		else if(request.request.equals("Im_finding_server")) {
+			tell_user_about_me(requester);
 		}
 		else {
 			System.out.println("that's an unknown request.");
 		}
+	}
+	
+	private void tell_user_about_me(Surfer requester) throws Exception {
+		String reply = "{\"signature\": \"OnlineParty\", \"version\": 0, \"reply\": \"Im_finding_server\"}";
+		byte reply_data[] = reply.getBytes();
+        DatagramPacket dp = new DatagramPacket(reply_data, reply_data.length, InetAddress.getByName(requester.get_global().ip), requester.get_global().port);
+        socket.send(dp);
 	}
 
 	/**
